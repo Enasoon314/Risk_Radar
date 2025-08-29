@@ -1,16 +1,14 @@
-<<<<<<< HEAD
 # Risk_Radar
-=======
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Risk_Radar is a web application for detecting potential financial scams in messages. It outputs a risk level (Low/Medium/High) along with the reasoning (e.g., suspicious links, high-value promises). Built with React and Vite for fast development and hot-reloading.
 
-Currently, two official plugins are available:
+## Template Info
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This project started from a minimal React + Vite template, which provides:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/blob/main/packages/plugin-react) using Babel for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) using SWC for Fast Refresh
 
 ## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
->>>>>>> cb153b4 (Initial front-end setup)
+For production development, using TypeScript with type-aware lint rules is recommended. See the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for integration info.
