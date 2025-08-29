@@ -40,3 +40,15 @@
 .read-the-docs {
   color: #888;
 }
+
+.result.low {
+  color: green;
+}
+
+.result.medium {
+  color: orange;
+}
+
+.result.high {
+  color: red;
+}

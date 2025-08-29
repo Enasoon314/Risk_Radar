@@ -1,63 +1,50 @@
-// src/App.jsx
 import { useState } from "react";
 import "./App.css";
 
 function App() {
   const [message, setMessage] = useState("");
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleAnalyze = async () => {
-    if (!message) return;
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
     try {
       const response = await fetch("http://localhost:3001/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
-      const data = await response.json();
-      setResult(data);
-    } catch (err) {
-      console.error("Error:", err);
-    }
-  };
 
-  // Determine color based on risk level
-  const getRiskColor = (risk) => {
-    switch (risk) {
-      case "High":
-        return "red";
-      case "Medium":
-        return "orange";
-      case "Low":
-        return "green";
-      default:
-        return "black";
+      const data = await response.json();
+      setResult(data); // { risk, reason }
+    } catch (error) {
+      console.error("Error:", error);
+      setResult({ risk: "Error", reason: "Failed to analyze message" });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="App">
       <h1>Risk Radar</h1>
-      <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Enter the message to analyze..."
-        rows={5}
-        cols={50}
-      />
-      <br />
-      <button onClick={handleAnalyze}>Analyze</button>
+      <form onSubmit={handleSubmit}>
+        <textarea
+          placeholder="Enter message to analyze"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button type="submit">Analyze</button>
+      </form>
+
+      {loading && <p>Analyzing...</p>}
 
       {result && (
-        <div className="result">
-          <h2>
-            Risk Level:{" "}
-            <span style={{ color: getRiskColor(result.risk) }}>
-              {result.risk}
-            </span>
-          </h2>
+        <div className={`result ${result.risk.toLowerCase()}`}>
+          <p>Risk Level: {result.risk}</p>
           <p>Reason: {result.reason}</p>
         </div>
       )}
@@ -66,3 +53,4 @@ function App() {
 }
 
 export default App;
+
