@@ -14,6 +14,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+// Test environment variable
+console.log("OPENAI_API_KEY =", process.env.OPENAI_API_KEY); // Should print your key
+
 // Analyze message risk using OpenAI GPT model
 async function analyzeMessageWithAI(message) {
   try {
@@ -32,7 +35,6 @@ async function analyzeMessageWithAI(message) {
     });
 
     const resultText = response.choices[0].message.content.trim();
-    // Expecting a text format like "Risk: High\nReason: Contains suspicious investment/money content"
     const riskMatch = resultText.match(/Risk:\s*(Low|Medium|High)/i);
     const reasonMatch = resultText.match(/Reason:\s*(.*)/i);
 
