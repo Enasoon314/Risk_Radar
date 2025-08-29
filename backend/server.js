@@ -2,38 +2,59 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import 'dotenv/config'; // Load environment variables from .env
+import OpenAI from 'openai';
 
 const app = express();
-
-// Enable CORS and JSON body parsing
 app.use(cors());
 app.use(bodyParser.json());
 
-// Simple scam detection function
-function analyzeMessage(message) {
-  let risk = "Low"; // Default risk
-  let reason = "No suspicious content detected"; // Default reason
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
-  // Basic keyword checks
-  if (message.includes("investment") || message.includes("money")) {
-    risk = "High";
-    reason = "Contains suspicious investment/money content";
-  } else if (message.includes("click here")) {
-    risk = "Medium";
-    reason = "Contains a link phrase";
+// Analyze message risk using OpenAI GPT model
+async function analyzeMessageWithAI(message) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a financial scam detection assistant. Classify messages into Low, Medium, High risk and provide a short reason.'
+        },
+        {
+          role: 'user',
+          content: message
+        }
+      ]
+    });
+
+    const resultText = response.choices[0].message.content.trim();
+    // Expecting a text format like "Risk: High\nReason: Contains suspicious investment/money content"
+    const riskMatch = resultText.match(/Risk:\s*(Low|Medium|High)/i);
+    const reasonMatch = resultText.match(/Reason:\s*(.*)/i);
+
+    const risk = riskMatch ? riskMatch[1] : 'Low';
+    const reason = reasonMatch ? reasonMatch[1] : 'No reason provided';
+
+    return { risk, reason };
+  } catch (err) {
+    console.error(err);
+    return { risk: 'Unknown', reason: 'Error analyzing message' };
   }
-
-  return { risk, reason };
 }
 
 // Backend API endpoint
-app.post('/api/analyze', (req, res) => {
+app.post('/api/analyze', async (req, res) => {
   const { message } = req.body;
-  const result = analyzeMessage(message);
+  const result = await analyzeMessageWithAI(message);
   res.json(result);
 });
 
 // Start the server
-app.listen(3001, () => {
-  console.log('Backend running on http://localhost:3001');
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Backend running on http://localhost:${PORT}`);
 });
