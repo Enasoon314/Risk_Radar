@@ -1,30 +1,39 @@
-// server.js
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
+// backend/server.js
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());           // Allow requests from frontend
-app.use(bodyParser.json()); // Parse JSON body
+// Enable CORS and JSON body parsing
+app.use(cors());
+app.use(bodyParser.json());
 
-// POST /check endpoint
-app.post("/check", (req, res) => {
-  const { text } = req.body;
-  if (!text) return res.status(400).json({ error: "No text provided" });
+// Simple scam detection function
+function analyzeMessage(message) {
+  let risk = "Low"; // Default risk
+  let reason = "No suspicious content detected"; // Default reason
 
-  // Placeholder response
-  res.json({
-    level: "low",               // Risk level
-    model: { label: "safe", prob: 0.95 }, // Dummy model prediction
-    rules: [],                   // Placeholder for rule-based reasons
-    similar_cases: []            // Placeholder for similar examples
-  });
+  // Basic keyword checks
+  if (message.includes("investment") || message.includes("money")) {
+    risk = "High";
+    reason = "Contains suspicious investment/money content";
+  } else if (message.includes("click here")) {
+    risk = "Medium";
+    reason = "Contains a link phrase";
+  }
+
+  return { risk, reason };
+}
+
+// Backend API endpoint
+app.post('/api/analyze', (req, res) => {
+  const { message } = req.body;
+  const result = analyzeMessage(message);
+  res.json(result);
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`SafeText backend running at http://localhost:${PORT}`);
+// Start the server
+app.listen(3001, () => {
+  console.log('Backend running on http://localhost:3001');
 });
