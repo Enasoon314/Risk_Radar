@@ -2,61 +2,88 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import 'dotenv/config'; // Load environment variables from .env
-import OpenAI from 'openai';
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+// Updated keyword-based risk analysis
+function analyzeMessage(message) {
+  let risk = "Low";
+  let reason = "No suspicious content detected";
 
-// Test environment variable
-console.log("OPENAI_API_KEY =", process.env.OPENAI_API_KEY); // Should print your key
+  const msgLower = message.toLowerCase();
 
-// Analyze message risk using OpenAI GPT model
-async function analyzeMessageWithAI(message) {
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a financial scam detection assistant. Classify messages into Low, Medium, High risk and provide a short reason.'
-        },
-        {
-          role: 'user',
-          content: message
-        }
-      ]
-    });
+  // High risk keywords
+  const highRiskKeywords = [
+    "urgent",
+    "verify",
+    "account suspended",
+    "password",
+    "credit card",
+    "confirm",
+    "immediate action required",
+    "payment failed",
+    "unauthorized login",
+    "suspicious activity"
+  ];
 
-    const resultText = response.choices[0].message.content.trim();
-    const riskMatch = resultText.match(/Risk:\s*(Low|Medium|High)/i);
-    const reasonMatch = resultText.match(/Reason:\s*(.*)/i);
+  // Medium risk keywords
+  const mediumRiskKeywords = [
+    "prize",
+    "winner",
+    "free",
+    "offer",
+    "claim",
+    "limited time",
+    "urgent response needed",
+    "investment",
+    "check attachment",
+    "unsubscribe"
+  ];
 
-    const risk = riskMatch ? riskMatch[1] : 'Low';
-    const reason = reasonMatch ? reasonMatch[1] : 'No reason provided';
+  // Low risk keywords
+  const lowRiskKeywords = [
+    "dear customer",
+    "support",
+    "update",
+    "invoice",
+    "notification",
+    "service",
+    "document",
+    "download",
+    "click here",
+    "account"
+  ];
 
-    return { risk, reason };
-  } catch (err) {
-    console.error(err);
-    return { risk: 'Unknown', reason: 'Error analyzing message' };
+  // Check high risk first
+  if (highRiskKeywords.some(keyword => msgLower.includes(keyword))) {
+    risk = "High";
+    reason = "Contains high-risk keywords often used in scams";
+  } 
+  // Check medium risk next
+  else if (mediumRiskKeywords.some(keyword => msgLower.includes(keyword))) {
+    risk = "Medium";
+    reason = "Contains medium-risk keywords commonly used in phishing or promotional scams";
+  } 
+  // Check low risk
+  else if (lowRiskKeywords.some(keyword => msgLower.includes(keyword))) {
+    risk = "Low";
+    reason = "Contains low-risk keywords; generally safe but monitor context";
   }
+
+  return { risk, reason };
 }
 
 // Backend API endpoint
-app.post('/api/analyze', async (req, res) => {
+app.post('/api/analyze', (req, res) => {
   const { message } = req.body;
-  const result = await analyzeMessageWithAI(message);
+  const result = analyzeMessage(message);
   res.json(result);
 });
 
 // Start the server
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
